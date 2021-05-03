@@ -24,7 +24,6 @@ class MyFrame extends JFrame implements ActionListener {
     private JTextField serverEd;
     public Boolean isScreenshotCaptured = false;
     private JTextArea textArea;
-    private JButton clear;
     private JButton takeScreenshot;
     private JButton sub;
     private JButton reset;
@@ -45,13 +44,13 @@ class MyFrame extends JFrame implements ActionListener {
         name = new JLabel("Issue Id");
         name.setFont(new Font("Arial", Font.PLAIN, 20));
         name.setSize(80, 30);
-        name.setLocation(100, 100);
+        name.setLocation(10, 110);
         c.add(name);
 
         tname = new JTextField();
         tname.setFont(new Font("Arial", Font.PLAIN, 15));
-        tname.setSize(190, 30);
-        tname.setLocation(200, 100);
+        tname.setSize(150, 40);
+        tname.setLocation(100, 110);
         c.add(tname);
 
 
@@ -68,20 +67,20 @@ class MyFrame extends JFrame implements ActionListener {
                                 BorderFactory.createTitledBorder("Comment "),
                                 BorderFactory.createEmptyBorder(5, 5, 5, 5)),
                         areaScrollPane.getBorder()));
-        areaScrollPane.setSize(490, 400);
+        areaScrollPane.setSize(490, 200);
         areaScrollPane.setLocation(10, 180);
         c.add(areaScrollPane);
 
         attachementNameL = new JLabel("Attachment Name");
         attachementNameL.setFont(new Font("Arial", Font.PLAIN, 20));
         attachementNameL.setSize(250, 20);
-        attachementNameL.setLocation(10, 600);
+        attachementNameL.setLocation(10, 400);
         c.add(attachementNameL);
 
         attachmentET = new JTextField();
         attachmentET.setFont(new Font("Arial", Font.PLAIN, 15));
-        attachmentET.setSize(250, 30);
-        attachmentET.setLocation(10, 630);
+        attachmentET.setSize(300, 40);
+        attachmentET.setLocation(10, 430);
         c.add(attachmentET);
 
         takeScreenshot = new JButton("Take Screenshot ");
@@ -108,47 +107,43 @@ class MyFrame extends JFrame implements ActionListener {
 
         // to show status in the bottom.
         res = new JLabel("");
-        res.setFont(new Font("Arial", Font.PLAIN, 10));
-        res.setSize(500, 15);
+        res.setFont(new Font("Arial", Font.PLAIN, 20));
+        res.setSize(500, 30);
         res.setLocation(10, 670);
         c.add(res);
 
-        serverEd = new HintTextField("Server Address - sakthivel.atlassian.net ");
-        serverEd.setFont(new Font("Arial", Font.PLAIN, 20));
-        serverEd.setSize(370, 30);
-        serverEd.setLocation(500, 60);
+        serverEd = new HintTextField("   Server Address - sakthivel.atlassian.net ");
+        serverEd.setFont(new Font("Arial", Font.PLAIN, 15));
+        serverEd.setSize(370, 40);
+        serverEd.setLocation(500, 35);
         c.add(serverEd);
 
         // jira user Name and password
         name = new JLabel("User Name");
         name.setFont(new Font("Arial", Font.PLAIN, 20));
         name.setSize(180, 20);
-        name.setLocation(500, 100);
+        name.setLocation(500, 80);
         c.add(name);
 
-        userName = new HintTextField("Email id");
+        userName = new HintTextField(" Email Id");
         userName.setFont(new Font("Arial", Font.PLAIN, 15));
-        userName.setSize(250, 30);
-        userName.setLocation(620, 100);
+        userName.setSize(350, 40);
+        userName.setLocation(620, 80);
         c.add(userName);
 
         name = new JLabel("API Token");
         name.setFont(new Font("Arial", Font.PLAIN, 20));
         name.setSize(170, 20);
-        name.setLocation(500, 130);
+        name.setLocation(500, 120);
         c.add(name);
 
-        password = new HintTextField("API Token");
+        password = new HintTextField("  API Token");
         password.setFont(new Font("Arial", Font.PLAIN, 15));
-        password.setSize(350, 30);
-        password.setLocation(620, 130);
+        password.setSize(350, 40);
+        password.setLocation(620, 120);
         c.add(password);
 
-        clear = new JButton("Clear");
-        clear.setSize(80, 30);
-        clear.setLocation(900, 100);
-        clear.addActionListener(this);
-        c.add(clear);
+
         setVisible(true);
     }
 
@@ -216,11 +211,8 @@ class MyFrame extends JFrame implements ActionListener {
             attachmentET.setText(def);
             isScreenshotCaptured = false;
 
-        } else if (e.getSource() == clear) {
-            String def = "";
-            userName.setText(def);
-            password.setText(def);
-        } else if (e.getSource() == takeScreenshot) {
+        }
+        else if (e.getSource() == takeScreenshot) {
 
             areaScrollPane.setVerticalScrollBarPolicy(
                     JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
