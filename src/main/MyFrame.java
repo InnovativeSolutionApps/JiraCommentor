@@ -210,11 +210,6 @@ class MyFrame
         c.add(clear);
 
 
-
-
-
-
-
         setVisible(true);
     }
 
