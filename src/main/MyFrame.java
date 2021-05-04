@@ -17,6 +17,7 @@ class MyFrame extends JFrame implements ActionListener {
     public Container c;
     private JLabel name;
     private JLabel attachementNameL;
+    private JLabel serverLabel;
     private JTextField attachmentET;
     private JTextField userName;
     private JTextField password;
@@ -30,11 +31,13 @@ class MyFrame extends JFrame implements ActionListener {
     public final JLabel tout = new JLabel();
     public final JScrollPane areaScrollPane = new JScrollPane(tout);
     private JLabel res;
+    public String home;
 
-    // constructor, to initialize the components
-    // with default values.
-    public MyFrame() throws IOException {
-        setTitle("Registration Form");
+
+    public MyFrame() throws IOException, InterruptedException {
+
+        home = System.getProperty("user.home");
+        setTitle("Jira Screenshot Attachment Tool ");
         setBounds(300, 90, 1000, 800);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setResizable(false);
@@ -44,13 +47,13 @@ class MyFrame extends JFrame implements ActionListener {
         name = new JLabel("Issue Id");
         name.setFont(new Font("Arial", Font.PLAIN, 20));
         name.setSize(80, 30);
-        name.setLocation(10, 110);
+        name.setLocation(10, 270);
         c.add(name);
 
         tname = new JTextField();
         tname.setFont(new Font("Arial", Font.PLAIN, 15));
         tname.setSize(150, 40);
-        tname.setLocation(100, 110);
+        tname.setLocation(150, 270);
         c.add(tname);
 
 
@@ -64,92 +67,94 @@ class MyFrame extends JFrame implements ActionListener {
         areaScrollPane.setBorder(
                 BorderFactory.createCompoundBorder(
                         BorderFactory.createCompoundBorder(
-                                BorderFactory.createTitledBorder("Comment "),
+                                BorderFactory.createTitledBorder("Bug Description "),
                                 BorderFactory.createEmptyBorder(5, 5, 5, 5)),
                         areaScrollPane.getBorder()));
         areaScrollPane.setSize(490, 200);
-        areaScrollPane.setLocation(10, 180);
+        areaScrollPane.setLocation(10, 400);
         c.add(areaScrollPane);
 
-        attachementNameL = new JLabel("Attachment Name");
+        attachementNameL = new JLabel("Screenshot Name:");
         attachementNameL.setFont(new Font("Arial", Font.PLAIN, 20));
         attachementNameL.setSize(250, 20);
-        attachementNameL.setLocation(10, 400);
+        attachementNameL.setLocation(10, 340);
         c.add(attachementNameL);
 
-        attachmentET = new JTextField();
+        attachmentET = new HintTextField("  File Name...");
         attachmentET.setFont(new Font("Arial", Font.PLAIN, 15));
         attachmentET.setSize(300, 40);
-        attachmentET.setLocation(10, 430);
+        attachmentET.setLocation(200, 330);
         c.add(attachmentET);
 
         takeScreenshot = new JButton("Take Screenshot ");
         takeScreenshot.setFont(new Font("Arial", Font.PLAIN, 15));
         takeScreenshot.setSize(150, 40);
-        takeScreenshot.setLocation(550, 720);
+        takeScreenshot.setLocation(380, 720);
         takeScreenshot.addActionListener(this);
         c.add(takeScreenshot);
-
 
         sub = new JButton("Submit");
         sub.setFont(new Font("Arial", Font.PLAIN, 15));
         sub.setSize(150, 40);
-        sub.setLocation(100, 720);
+        sub.setLocation(20, 720);
         sub.addActionListener(this);
         c.add(sub);
 
         reset = new JButton("Reset");
         reset.setFont(new Font("Arial", Font.PLAIN, 15));
         reset.setSize(150, 40);
-        reset.setLocation(270, 720);
+        reset.setLocation(200, 720);
         reset.addActionListener(this);
         c.add(reset);
 
         // to show status in the bottom.
         res = new JLabel("");
-        res.setFont(new Font("Arial", Font.PLAIN, 20));
-        res.setSize(500, 30);
-        res.setLocation(10, 670);
+        res.setFont(new Font("Arial", Font.PLAIN, 15));
+        res.setSize(500, 50);
+        res.setLocation(20, 640);
         c.add(res);
 
-        serverEd = new HintTextField("   Server Address - sakthivel.atlassian.net ");
+        serverLabel = new JLabel("Server Name ");
+        serverLabel.setFont(new Font("Arial", Font.PLAIN, 20));
+        serverLabel.setSize(80, 30);
+        serverLabel.setLocation(10, 170);
+        c.add(serverLabel);
+
+        serverEd = new HintTextField(" Server Address - sakthivel.atlassian.net ");
         serverEd.setFont(new Font("Arial", Font.PLAIN, 15));
-        serverEd.setSize(370, 40);
-        serverEd.setLocation(500, 35);
+        serverEd.setSize(350, 40);
+        serverEd.setLocation(150, 170);
         c.add(serverEd);
 
         // jira user Name and password
         name = new JLabel("User Name");
         name.setFont(new Font("Arial", Font.PLAIN, 20));
-        name.setSize(180, 20);
-        name.setLocation(500, 80);
+        name.setSize(180, 30);
+        name.setLocation(10, 85);
         c.add(name);
 
         userName = new HintTextField(" Email Id");
         userName.setFont(new Font("Arial", Font.PLAIN, 15));
         userName.setSize(350, 40);
-        userName.setLocation(620, 80);
+        userName.setLocation(150, 80);
         c.add(userName);
 
         name = new JLabel("API Token");
         name.setFont(new Font("Arial", Font.PLAIN, 20));
         name.setSize(170, 20);
-        name.setLocation(500, 120);
+        name.setLocation(10, 133);
         c.add(name);
 
         password = new HintTextField("  API Token");
         password.setFont(new Font("Arial", Font.PLAIN, 15));
         password.setSize(350, 40);
-        password.setLocation(620, 120);
+        password.setLocation(150, 123);
         c.add(password);
 
-
         setVisible(true);
+        checkDeviceConnectedORNOT();
     }
 
-    // method actionPerformed()
-    // to get the action performed
-    // by the user and act accordingly
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == sub) {
             res.setText(" ");
@@ -158,43 +163,35 @@ class MyFrame extends JFrame implements ActionListener {
             String issueid = tname.getText();
             String commentTxt = textArea.getText();
 
-
-            if (!uName.equals("") && !pass.equals("") && !issueid.equals("") && !commentTxt.equals("") && !isScreenshotCaptured && !serverEd.getText().equals("")) {
-
-                System.out.println("in side........if ");
-
+            File f = new File(home + "/Downloads/" + attachmentET.getText() + ".png");
+            if (!f.exists() && !uName.equals("") && !pass.equals("") && !issueid.equals("") && !commentTxt.equals("") && !serverEd.getText().equals("")) {
                 try {
                     String status = JiraUtil.postCommentOnlyToIssue(uName, pass, issueid, commentTxt, serverEd.getText());
                     res.setText(status);
-
                 } catch (IOException ioException) {
                     ioException.printStackTrace();
                 }
-
             } else {
                 System.out.println(">>>> out side if comment only..");
-
             }
+            /*System.out.println(f.exists());
+            System.out.println(!uName.equals(""));
+            System.out.println(!pass.equals(""));
+            System.out.println(!issueid.equals(""));
+            System.out.println(!commentTxt.equals(""));
+            System.out.println(!serverEd.getText().equals(""));*/
 
-            File f = new File("/Users/sakthiveliyappan/Downloads/" + attachmentET.getText() + ".png");
-            if (f.exists() && !uName.equals("") && !pass.equals("") && !issueid.equals("") && !commentTxt.equals("") && isScreenshotCaptured && !serverEd.getText().equals("")) {
-                System.out.println("in side...attachment.....if ");
-
-
+            if (f.exists() && !uName.equals("") && !pass.equals("") && !issueid.equals("") && !commentTxt.equals("") && !serverEd.getText().equals("")) {
                 try {
-                    String status = JiraUtil.postAttachmentWithComment(uName, pass, issueid, commentTxt, attachmentET.getText(), "/Users/sakthiveliyappan/Downloads/" + attachmentET.getText() + ".png", serverEd.getText());
+                    String status = JiraUtil.postAttachmentWithComment(uName, pass, issueid, commentTxt, attachmentET.getText(), home + "/Downloads/" + attachmentET.getText() + ".png", serverEd.getText());
                     res.setText(status);
 
                 } catch (IOException ioException) {
                     ioException.printStackTrace();
                 }
-
             } else {
                 System.out.println(">>>> out side if Attachment.. ");
-
             }
-
-
         } else if (e.getSource() == reset) {
             String def = "";
             res.setText(def);
@@ -202,56 +199,42 @@ class MyFrame extends JFrame implements ActionListener {
             textArea.setText(def);
             areaScrollPane.setVerticalScrollBarPolicy(
                     JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-            areaScrollPane.setSize(450, 500);
-            areaScrollPane.setLocation(550, 200);
+            areaScrollPane.setSize(450, 790);
+            areaScrollPane.setLocation(550, 10);
             c.add(areaScrollPane);
             tout.setIcon(null);
             tout.revalidate();
             areaScrollPane.remove(tout);
             attachmentET.setText(def);
-            isScreenshotCaptured = false;
-
-        }
-        else if (e.getSource() == takeScreenshot) {
-
+        } else if (e.getSource() == takeScreenshot) {
             areaScrollPane.setVerticalScrollBarPolicy(
                     JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-            areaScrollPane.setSize(450, 500);
-            areaScrollPane.setLocation(550, 200);
+            areaScrollPane.setSize(450, 790);
+            areaScrollPane.setLocation(550, 10);
             c.add(areaScrollPane);
-
             try {
+                if (checkADB_StartedOrNot() && checkDeviceConnectedORNOT()) {
+                    runCommand("adb shell screencap /sdcard/" + attachmentET.getText() + ".png");
+                    String pullToSystem = home + "/Downloads/" + attachmentET.getText() + ".png";
+                    String adbPullCmd = "adb  pull /sdcard/" + attachmentET.getText() + ".png" + " " + pullToSystem + "";
+                    runCommand(adbPullCmd);
 
-
-                runCommand("adb shell screencap /sdcard/" + attachmentET.getText() + ".png");
-                runCommand("adb  pull /sdcard/" + attachmentET.getText() + ".png  /Users/sakthiveliyappan/Downloads/" + attachmentET.getText() + ".png");
-
-
-                BufferedImage myPicture = ImageIO.read(new File("/Users/sakthiveliyappan/Downloads/" + attachmentET.getText() + ".png"));
-
-                tout.setIcon(new ImageIcon(myPicture));
-                isScreenshotCaptured = true;
-
-
-            } catch (InterruptedException interruptedException) {
-                interruptedException.printStackTrace();
+                    ImageIcon imageIcon = new ImageIcon(home + "/Downloads/" + attachmentET.getText() + ".png"); // load the image to a imageIcon
+                    Image image = imageIcon.getImage(); // transform it
+                    Image newimg = image.getScaledInstance(430, 780, java.awt.Image.SCALE_SMOOTH); // scale it the smooth way
+                    imageIcon = new ImageIcon(newimg);  // transform it back
+                    tout.setIcon(imageIcon);
+                }
             } catch (IOException ioException) {
                 ioException.printStackTrace();
+            } catch (InterruptedException interruptedException) {
+                interruptedException.printStackTrace();
             }
-
-
-            System.out.println("???? done ..");
-
-
         }
-
-
     }
 
     public static String runCommand(String command) throws InterruptedException, IOException {
         String os = System.getProperty("os.name");
-
-        // build cmd proccess according to os
         if (os.contains("Windows")) // if windows
         {
             builder = new ProcessBuilder("cmd.exe", "/c", command);
@@ -260,12 +243,7 @@ class MyFrame extends JFrame implements ActionListener {
             p = builder.start();
         } else // If Mac
             p = Runtime.getRuntime().exec(command);
-
-        // get std output
         BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream()));
-
-        System.out.println("r" + r.toString());
-
         String line = "";
         String allLine = "";
         int i = 1;
@@ -276,10 +254,8 @@ class MyFrame extends JFrame implements ActionListener {
                 break;
             i++;
         }
-        System.out.println(" Commend finish.." + allLine);
         return allLine;
     }
-
 
     public static void main(String[] args) {
         //Schedule a job for the event dispatching thread:
@@ -290,17 +266,54 @@ class MyFrame extends JFrame implements ActionListener {
                 UIManager.put("swing.boldMetal", Boolean.TRUE);
                 try {
                     MyFrame f = new MyFrame();
-                } catch (IOException e) {
+                } catch (IOException | InterruptedException e) {
                     e.printStackTrace();
                 }
             }
         });
 
-
     }
+
+    public Boolean checkADB_StartedOrNot() throws IOException, InterruptedException {
+
+        boolean isConnected = false;
+        runCommand("adb kill-server");
+        String output = runCommand("adb start-server");
+        String[] lines = output.split("\n");
+        if (lines.length == 1) {
+            res.setText("adb service already started");
+            isConnected = true;
+            checkDeviceConnectedORNOT();
+        } else if
+        (lines[1].equalsIgnoreCase("* daemon started successfully *")) {
+            res.setText("adb service started");
+            isConnected = true;
+            checkDeviceConnectedORNOT();
+        } else if (lines[0].contains("internal or external command")) {
+            res.setText("adb path not set in system varibale");
+        }
+        return isConnected;
+    }
+
+    public Boolean checkDeviceConnectedORNOT() throws IOException, InterruptedException {
+        String output = runCommand("adb devices");
+        String[] lines = output.split("\n");
+        boolean isConnected = false;
+        if (lines.length <= 1) {
+            res.setText("No Device Connected");
+            runCommand("adb kill-server");
+        } else if (lines.length >= 2 && lines[1].contains("device")) {
+            isConnected = true;
+            res.setText(" Device Connected");
+        }
+        return isConnected;
+    }
+
 }
 
 class HintTextField extends JTextField {
+    private final String _hint;
+
     public HintTextField(String hint) {
         _hint = hint;
     }
@@ -322,7 +335,6 @@ class HintTextField extends JTextField {
         }
     }
 
-    private final String _hint;
 }
 
 
