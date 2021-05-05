@@ -1,5 +1,10 @@
 package main;
 
+import jdk.nashorn.internal.runtime.regexp.joni.exception.JOniException;
+import okhttp3.*;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -8,6 +13,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Base64;
 
 class MyFrame extends JFrame implements ActionListener {
 
@@ -34,7 +40,6 @@ class MyFrame extends JFrame implements ActionListener {
 
 
     public MyFrame() throws IOException, InterruptedException {
-
 
         String headerText =
                  " Innovative Solutions -  Contact : innovativesolutionsapps@gmail.com" +
@@ -181,34 +186,26 @@ class MyFrame extends JFrame implements ActionListener {
             String issueid = tname.getText();
             String commentTxt = textArea.getText();
 
-            File f = new File(home + "/Downloads/" + attachmentET.getText() + ".png");
+            File f = new File(home + "/Downloads/" + attachmentET.getText().trim().replaceAll(" ","")  + ".png");
             if (!f.exists() && !uName.equals("") && !pass.equals("") && !issueid.equals("") && !commentTxt.equals("") && !serverEd.getText().equals("")) {
                 try {
-                    String status = JiraUtil.postCommentOnlyToIssue(uName, pass, issueid, commentTxt, serverEd.getText());
+                    String status = JiraUtil.postCommentOnlyToIssue(uName.trim(), pass.trim(), issueid.trim(), commentTxt, serverEd.getText().trim().replaceAll(" ","") .trim());
                     res.setText(status);
                 } catch (IOException ioException) {
                     ioException.printStackTrace();
                 }
             } else {
-                System.out.println(">>>> out side if comment only..");
             }
-            /*System.out.println(f.exists());
-            System.out.println(!uName.equals(""));
-            System.out.println(!pass.equals(""));
-            System.out.println(!issueid.equals(""));
-            System.out.println(!commentTxt.equals(""));
-            System.out.println(!serverEd.getText().equals(""));*/
 
             if (f.exists() && !uName.equals("") && !pass.equals("") && !issueid.equals("") && !commentTxt.equals("") && !serverEd.getText().equals("")) {
                 try {
-                    String status = JiraUtil.postAttachmentWithComment(uName, pass, issueid, commentTxt, attachmentET.getText(), home + "/Downloads/" + attachmentET.getText() + ".png", serverEd.getText());
+                    String status = JiraUtil.postAttachmentWithComment(uName.trim(), pass.trim(), issueid.trim(), commentTxt, attachmentET.getText().trim().replaceAll(" ","") , home + "/Downloads/" + attachmentET.getText().trim().replaceAll(" ","") + ".png", serverEd.getText().trim().replaceAll(" ","") .trim());
                     res.setText(status);
 
                 } catch (IOException ioException) {
                     ioException.printStackTrace();
                 }
             } else {
-                System.out.println(">>>> out side if Attachment.. ");
             }
         } else if (e.getSource() == reset) {
             String def = "";
@@ -232,12 +229,11 @@ class MyFrame extends JFrame implements ActionListener {
             c.add(areaScrollPane);
             try {
                 if (checkADB_StartedOrNot() && checkDeviceConnectedORNOT()) {
-                    runCommand("adb shell screencap /sdcard/" + attachmentET.getText() + ".png");
-                    String pullToSystem = home + "/Downloads/" + attachmentET.getText() + ".png";
-                    String adbPullCmd = "adb  pull /sdcard/" + attachmentET.getText() + ".png" + " " + pullToSystem + "";
+                    runCommand("adb shell screencap /sdcard/" + attachmentET.getText().trim().replaceAll(" ","") + ".png");
+                    String pullToSystem = home + "/Downloads/" + attachmentET.getText().trim().replaceAll(" ","") + ".png";
+                    String adbPullCmd = "adb  pull /sdcard/" + attachmentET.getText().trim().replaceAll(" ","") + ".png" + " " + pullToSystem + "";
                     runCommand(adbPullCmd);
-
-                    ImageIcon imageIcon = new ImageIcon(home + "/Downloads/" + attachmentET.getText() + ".png"); // load the image to a imageIcon
+                    ImageIcon imageIcon = new ImageIcon(home + "/Downloads/" + attachmentET.getText().trim().replaceAll(" ","") + ".png"); // load the image to a imageIcon
                     Image image = imageIcon.getImage(); // transform it
                     Image newimg = image.getScaledInstance(430, 780, java.awt.Image.SCALE_SMOOTH); // scale it the smooth way
                     imageIcon = new ImageIcon(newimg);  // transform it back
@@ -266,7 +262,6 @@ class MyFrame extends JFrame implements ActionListener {
         String allLine = "";
         int i = 1;
         while ((line = r.readLine()) != null) {
-            System.out.println(i + ". " + line);
             allLine = allLine + "" + line + "\n";
             if (line.contains("Console LogLevel: debug"))
                 break;
@@ -329,32 +324,6 @@ class MyFrame extends JFrame implements ActionListener {
 
 }
 
-class HintTextField extends JTextField {
-    private final String _hint;
-
-    public HintTextField(String hint) {
-        _hint = hint;
-    }
-
-    @Override
-    public void paint(Graphics g) {
-        super.paint(g);
-        if (getText().length() == 0) {
-            int h = getHeight();
-            ((Graphics2D) g).setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-            Insets ins = getInsets();
-            FontMetrics fm = g.getFontMetrics();
-            int c0 = getBackground().getRGB();
-            int c1 = getForeground().getRGB();
-            int m = 0xfefefefe;
-            int c2 = ((c0 & m) >>> 1) + ((c1 & m) >>> 1);
-            g.setColor(new Color(c2, true));
-            g.drawString(_hint, ins.left, h / 2 + fm.getAscent() / 2 - 2);
-        }
-    }
-
-}
-
 // implement a round-shaped JTextField
 class RoundedJTextField extends JTextField {
     private Shape shape;
@@ -399,6 +368,90 @@ class RoundedJTextField extends JTextField {
         return shape.contains(x, y);
     }
 }
+
+class JiraUtil {
+
+    public static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
+
+    private static String getAuthenticationToken(String userName, String password) {
+        StringBuilder authenticationToken = new StringBuilder();
+        authenticationToken.append("Basic ");
+        authenticationToken.append(base64(new StringBuilder(userName).append(":").
+                append(password).toString()));
+        return authenticationToken.toString();
+    }
+
+    private static String base64(String s) {
+        return new String(Base64.getEncoder().encode(s.getBytes()));
+    }
+
+
+    public static String postCommentOnlyToIssue(String userName, String password, String issueId, String commentText, String serverIp) throws IOException {
+        String status = "";
+
+        OkHttpClient client = new OkHttpClient();
+        Request request = new Request.Builder().
+                url("https://" + serverIp + "/rest/api/2/issue/" + issueId + "/comment").
+                post(RequestBody.create(JSON, getPostCommentRequestJson(commentText))).
+                addHeader("Authorization", getAuthenticationToken(userName, password)).
+                addHeader("Accept", "application/json").
+                addHeader("Content-Type", "application/json").
+                build();
+        Response response = client.newCall(request).execute();
+        //System.out.println("response " + response);
+
+        if (response.code() == 201) {
+            status = "Comment Successfully Added \n";
+
+        } else {
+            status = "Comment Request Failed \n";
+        }
+        return status;
+    }
+
+    private static String getPostCommentRequestJson(String comment) {
+        JSONObject request = new JSONObject();
+        try {
+            request.put("body", comment);
+        } catch (JOniException | JSONException e) {
+            e.printStackTrace();
+        }
+        return request.toString();
+    }
+
+    public static String postAttachmentWithComment(String userName, String password, String issueId, String commentText, String attachmentName, String filePath, String serverIp) throws IOException {
+        String status = "";
+        File file = new File(filePath);
+        OkHttpClient client = new OkHttpClient().newBuilder()
+                .build();
+        MediaType mediaType = MediaType.parse("multipart/form-data");
+        RequestBody body = new MultipartBody.Builder().setType(MultipartBody.FORM)
+                .addFormDataPart("file", file.getName(),
+                        RequestBody.create(MediaType.parse("application/octet-stream"),
+                                new File(filePath)))
+                .build();
+        Request request = new Request.Builder()
+                .url("https://" + serverIp + "/rest/api/3/issue/" + issueId + "/attachments")
+                .method("POST", body)
+                .addHeader("Content-Type", "multipart/form-data")
+                .addHeader("X-Atlassian-Token", "no-check")
+                .addHeader("charset", "UTF-8")
+                .addHeader("Authorization", getAuthenticationToken(userName, password))
+                .build();
+
+        Response response = client.newCall(request).execute();
+
+        if (response.code() == 200) {
+            status = " Attachment Successfully added \n";
+        } else {
+            status = "Attachment Request Failed \n";
+        }
+        status = status + postCommentOnlyToIssue(userName, password, issueId, commentText, serverIp);
+        return status;
+    }
+}
+
+
 
 
 
